@@ -1,0 +1,190 @@
+{% extends "base.html" %}
+
+{% block title %}Nova Conferência - Sistema de Conferência{% endblock %}
+
+{% block content %}
+<h2 class="mb-4">Iniciar Nova Conferência</h2>
+
+<form method="POST" action="{{ url_for("nova_conferencia") }}">
+    <div class="card shadow-sm mb-4">
+        <div class="card-header">
+            Informações Básicas
+        </div>
+        <div class="card-body">
+            <div class="form-row">
+                <div class="form-group col-md-6">
+                    <label for="numero_os">Número da O.S.</label>
+                    <input type="text" class="form-control" id="numero_os" name="numero_os" required>
+                </div>
+                <div class="form-group col-md-6">
+                    <label for="nome_cliente_projeto">Cliente / Projeto</label>
+                    <input type="text" class="form-control" id="nome_cliente_projeto" name="nome_cliente_projeto">
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="nome_arquivo_original">Nome do Arquivo Original</label>
+                <input type="text" class="form-control" id="nome_arquivo_original" name="nome_arquivo_original">
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-header">
+            Checklist de Pré-Impressão
+        </div>
+        <div class="card-body">
+            {% for item in checklist_items %}
+            <div class="form-group border-bottom pb-3 mb-3">
+                <label class="font-weight-bold d-block">{{ loop.index }}. {{ item.descricao }}</label>
+                <div class="btn-group btn-group-toggle" data-toggle="buttons">
+                    <label class="btn btn-outline-success">
+                        <input type="radio" name="checklist__{{ item.codigo }}" value="Conforme" required> Conforme
+                    </label>
+                    <label class="btn btn-outline-danger">
+                        <input type="radio" name="checklist__{{ item.codigo }}" value="Não Conforme"> Não Conforme
+                    </label>
+                    <label class="btn btn-outline-secondary">
+                        <input type="radio" name="checklist__{{ item.codigo }}" value="N/A"> N/A
+                    </label>
+                </div>
+                <div class="mt-2">
+                    <label for="checklist_obs__{{ item.codigo }}" class="sr-only">Observação para {{ item.descricao }}</label>
+                    <input type="text" class="form-control form-control-sm" id="checklist_obs__{{ item.codigo }}" name="checklist_obs__{{ item.codigo }}" placeholder="Observação (opcional)">
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-header">
+            Processos Adicionais
+        </div>
+        <div class="card-body">
+            <div class="form-row">
+                <div class="form-group col-md-6">
+                    <label>Montou Boneca?</label>
+                    <div class="btn-group btn-group-toggle d-block" data-toggle="buttons">
+                        <label class="btn btn-outline-secondary">
+                            <input type="radio" name="montou_boneca" value="Sim"> Sim
+                        </label>
+                        <label class="btn btn-outline-secondary">
+                            <input type="radio" name="montou_boneca" value="Não"> Não
+                        </label>
+                        <label class="btn btn-outline-secondary active">
+                            <input type="radio" name="montou_boneca" value="N/A" checked> N/A
+                        </label>
+                    </div>
+                </div>
+                <div class="form-group col-md-6">
+                    <label>Deu Baixa nas Chapas?</label>
+                     <div class="btn-group btn-group-toggle d-block" data-toggle="buttons">
+                        <label class="btn btn-outline-secondary">
+                            <input type="radio" name="deu_baixa_chapas" value="Sim"> Sim
+                        </label>
+                        <label class="btn btn-outline-secondary">
+                            <input type="radio" name="deu_baixa_chapas" value="Não"> Não
+                        </label>
+                        <label class="btn btn-outline-secondary active">
+                            <input type="radio" name="deu_baixa_chapas" value="N/A" checked> N/A
+                        </label>
+                    </div>
+                </div>
+            </div>
+             <div class="form-row">
+                <div class="form-group col-md-6">
+                    <label>Referência de Cor</label>
+                    <select class="form-control" name="referencia_cor">
+                        <option value="Pantone">Pantone</option>
+                        <option value="Amostra Física">Amostra Física</option>
+                        <option value="Digital">Digital</option>
+                        <option value="Outro">Outro</option>
+                        <option value="N/A" selected>N/A</option>
+                    </select>
+                    <input type="text" class="form-control form-control-sm mt-2" name="detalhe_referencia_cor" placeholder="Detalhe (se Outro)">
+                </div>
+                <div class="form-group col-md-6">
+                    <label>Fez Apontamento no Sistema?</label>
+                    <div class="btn-group btn-group-toggle d-block" data-toggle="buttons">
+                        <label class="btn btn-outline-secondary">
+                            <input type="radio" name="fez_apontamento_sistema" value="Sim"> Sim
+                        </label>
+                        <label class="btn btn-outline-secondary">
+                            <input type="radio" name="fez_apontamento_sistema" value="Não"> Não
+                        </label>
+                        <label class="btn btn-outline-secondary active">
+                            <input type="radio" name="fez_apontamento_sistema" value="N/A" checked> N/A
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-header">
+            Observações Gerais
+        </div>
+        <div class="card-body">
+            <div class="form-group">
+                <label for="observacoes_gerais" class="sr-only">Observações Gerais</label>
+                <textarea class="form-control" id="observacoes_gerais" name="observacoes_gerais" rows="4" placeholder="Adicione aqui quaisquer observações gerais sobre esta conferência..."></textarea>
+            </div>
+        </div>
+    </div>
+
+    <div class="text-center">
+        <button type="submit" class="btn btn-primary btn-lg">Salvar Conferência</button>
+        <a href="{{ url_for("index") }}" class="btn btn-secondary btn-lg ml-2">Cancelar</a>
+    </div>
+</form>
+
+{% endblock %}
+
+{% block scripts_extra %}
+<style>
+/* Estilos específicos para os botões de rádio customizados */
+.btn-group-toggle .btn {
+    border-color: var(--border-color);
+    color: var(--text-subtle);
+    background-color: transparent;
+    margin-right: 5px; /* Espaçamento entre botões */
+}
+
+.btn-group-toggle .btn:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: var(--text-light);
+}
+
+.btn-group-toggle .btn.active {
+    background-color: var(--primary-green);
+    color: var(--dark-bg);
+    border-color: var(--primary-green);
+}
+
+/* Ajustes para botões de rádio específicos (Conforme/Não Conforme) */
+.btn-group-toggle .btn.btn-outline-success.active {
+    background-color: #28a745; /* Verde Sucesso */
+    border-color: #28a745;
+    color: #fff;
+}
+.btn-group-toggle .btn.btn-outline-danger.active {
+    background-color: #dc3545; /* Vermelho Perigo */
+    border-color: #dc3545;
+    color: #fff;
+}
+.btn-group-toggle .btn.btn-outline-secondary.active {
+    background-color: #6c757d; /* Cinza Secundário */
+    border-color: #6c757d;
+    color: #fff;
+}
+
+/* Remover borda padrão do input radio */
+.btn-group-toggle > .btn input[type="radio"] {
+    position: absolute;
+    clip: rect(0,0,0,0);
+    pointer-events: none;
+}
+</style>
+{% endblock %}
+

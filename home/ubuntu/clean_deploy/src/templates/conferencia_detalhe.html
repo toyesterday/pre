@@ -1,0 +1,241 @@
+{% extends "base.html" %}
+
+{% block title %}Detalhes da Conferência - OS {{ conferencia.numero_os }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0">Detalhes da Conferência - OS {{ conferencia.numero_os }}</h2>
+    <div>
+        <a href="{{ url_for("gerar_pdf_conferencia", id_conferencia=conferencia.id_conferencia) }}" class="btn btn-secondary" target="_blank">Gerar Relatório</a>
+        <a href="{{ url_for("index") }}" class="btn btn-secondary ml-2">Voltar para Lista</a>
+    </div>
+</div>
+
+<div class="card shadow-sm mb-4">
+    <div class="card-header">
+        Informações Gerais
+    </div>
+    <div class="card-body">
+        <div class="info-grid">
+            <span class="info-label">Número OS:</span> <span class="info-value">{{ conferencia.numero_os }}</span>
+            <span class="info-label">Cliente/Projeto:</span> <span class="info-value">{{ conferencia.nome_cliente_projeto or "N/A" }}</span>
+            <span class="info-label">Arquivo Original:</span> <span class="info-value">{{ conferencia.nome_arquivo_original or "N/A" }}</span>
+            <span class="info-label">Data Início:</span> <span class="info-value">{{ conferencia.data_inicio_conferencia|datetimeformat }}</span>
+            <span class="info-label">Data Conclusão:</span> <span class="info-value">{{ conferencia.data_fim_conferencia|datetimeformat if conferencia.data_fim_conferencia else "Em Andamento" }}</span>
+            <span class="info-label">Status Conferência:</span> 
+            <span class="info-value">
+                <span class="status-badge 
+                    {% if conferencia.status_conferencia == "Aprovado" %}status-aprovado
+                    {% elif conferencia.status_conferencia == "Reprovado com Pendências" %}status-reprovado
+                    {% else %}status-pendente{% endif %}">
+                    {{ conferencia.status_conferencia }}
+                </span>
+            </span>
+            <span class="info-label">Responsável:</span> <span class="info-value">{{ conferencia.responsavel.nome_completo }}</span>
+        </div>
+    </div>
+</div>
+
+<div class="card shadow-sm mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        Status de Envio (Faca/Clichê/Fotolito)
+        <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#modalEnvio">
+            Atualizar Status
+        </button>
+    </div>
+    <div class="card-body">
+        <div class="info-grid">
+            <span class="info-label">Status Atual:</span> 
+            <span class="info-value">
+                {% if conferencia.envio_faca_cliche %}
+                    <span class="status-badge {% if conferencia.envio_faca_cliche.status_envio == "Enviado" %}status-enviado{% else %}status-pendente{% endif %}">
+                        {{ conferencia.envio_faca_cliche.status_envio }}
+                    </span>
+                {% else %}
+                    <span class="status-badge status-pendente">Pendente</span>
+                {% endif %}
+            </span>
+            {% if conferencia.envio_faca_cliche %}
+                <span class="info-label">Atualizado por:</span> <span class="info-value">{{ conferencia.envio_faca_cliche.responsavel_envio.nome_completo if conferencia.envio_faca_cliche.responsavel_envio else "N/A" }}</span>
+                <span class="info-label">Data Atualização:</span> <span class="info-value">{{ conferencia.envio_faca_cliche.data_envio|datetimeformat }}</span>
+                {% if conferencia.envio_faca_cliche.observacoes_envio %}
+                    <span class="info-label">Observações:</span> <span class="info-value">{{ conferencia.envio_faca_cliche.observacoes_envio }}</span>
+                {% endif %}
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div class="card shadow-sm mb-4">
+    <div class="card-header">
+        Itens de Verificação
+    </div>
+    <div class="card-body">
+        {% for item in conferencia.itens_conferencia %}
+            <div class="checklist-item">
+                <div class="checklist-description">{{ loop.index }}. {{ item.descricao_item_checklist }}</div>
+                <div class="info-value">
+                    Resposta: 
+                    <span class="status-badge 
+                        {% if item.resposta == "Conforme" %}status-conforme
+                        {% elif item.resposta == "Não Conforme" %}status-nao-conforme
+                        {% else %}status-na{% endif %}">
+                        {{ item.resposta or "N/A" }}
+                    </span>
+                </div>
+                {% if item.observacao_item %}
+                    <div class="item-observacao">Obs: {{ item.observacao_item }}</div>
+                {% endif %}
+            </div>
+        {% endfor %}
+    </div>
+</div>
+
+{% if conferencia.processos_adicionais %}
+<div class="card shadow-sm mb-4">
+    <div class="card-header">
+        Processos Adicionais
+    </div>
+    <div class="card-body">
+        <div class="info-grid">
+            <span class="info-label">Montou Boneca:</span> <span class="info-value">{{ conferencia.processos_adicionais.montou_boneca or "N/A" }}</span>
+            <span class="info-label">Referência de Cor:</span> 
+            <span class="info-value">
+                {{ conferencia.processos_adicionais.referencia_cor or "N/A" }}
+                {% if conferencia.processos_adicionais.referencia_cor == "Outro" and conferencia.processos_adicionais.detalhe_referencia_cor %}
+                    ({{ conferencia.processos_adicionais.detalhe_referencia_cor }})
+                {% endif %}
+            </span>
+            <span class="info-label">Baixa de Chapas:</span> <span class="info-value">{{ conferencia.processos_adicionais.deu_baixa_chapas or "N/A" }}</span>
+            <span class="info-label">Apontamento no Sistema:</span> <span class="info-value">{{ conferencia.processos_adicionais.fez_apontamento_sistema or "N/A" }}</span>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% if conferencia.observacoes_gerais %}
+<div class="card shadow-sm mb-4">
+    <div class="card-header">
+        Observações Gerais
+    </div>
+    <div class="card-body">
+        <div class="info-value">{{ conferencia.observacoes_gerais }}</div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Modal para atualizar status de envio -->
+<div class="modal fade" id="modalEnvio" tabindex="-1" role="dialog" aria-labelledby="modalEnvioLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <form action="{{ url_for("atualizar_status_envio", id_conferencia=conferencia.id_conferencia) }}" method="POST">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalEnvioLabel">Atualizar Status de Envio - O.S. {{ conferencia.numero_os }}</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Fechar">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="status_envio">Status do Envio:</label>
+                        <select class="form-control" id="status_envio" name="status_envio" required>
+                            <option value="Pendente" {% if not conferencia.envio_faca_cliche or conferencia.envio_faca_cliche.status_envio == "Pendente" %}selected{% endif %}>Pendente</option>
+                            <option value="Enviado" {% if conferencia.envio_faca_cliche and conferencia.envio_faca_cliche.status_envio == "Enviado" %}selected{% endif %}>Enviado</option>
+                        </select>
+                    </div>
+                    <div class="form-group mb-0">
+                        <label for="observacoes_envio">Observações:</label>
+                        <textarea class="form-control" id="observacoes_envio" name="observacoes_envio" rows="3">{{ conferencia.envio_faca_cliche.observacoes_envio if conferencia.envio_faca_cliche else "" }}</textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Salvar Alterações</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts_extra %}
+<style>
+/* Estilos específicos para esta página, se necessário */
+.info-grid {
+    display: grid;
+    grid-template-columns: 180px 1fr;
+    gap: 8px 15px; /* row-gap column-gap */
+    margin-bottom: 10px;
+}
+
+.info-label {
+    font-weight: 600; /* SemiBold */
+    color: var(--text-subtle);
+}
+
+.info-value {
+    word-break: break-word;
+    color: var(--text-light);
+}
+
+.checklist-item {
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px dashed var(--border-color);
+}
+.checklist-item:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+.checklist-description {
+    font-weight: 600; /* SemiBold */
+    margin-bottom: 5px;
+    color: var(--text-light);
+}
+
+.item-observacao {
+    font-style: italic;
+    margin-left: 10px;
+    font-size: 0.9em;
+    color: var(--text-subtle);
+    margin-top: 5px;
+    padding-left: 10px;
+    border-left: 2px solid var(--border-color);
+}
+
+/* Badges de Status */
+.status-badge {
+    padding: 3px 10px;
+    border-radius: 50px; /* Arredondado */
+    font-size: 0.85em;
+    font-weight: 600;
+    color: var(--dark-bg);
+    display: inline-block;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.status-aprovado, .status-conforme {
+    background-color: var(--primary-green);
+}
+
+.status-reprovado, .status-nao-conforme {
+    background-color: #dc3545; /* Vermelho */
+    color: var(--text-light);
+}
+
+.status-pendente, .status-na {
+    background-color: #ffc107; /* Amarelo */
+}
+
+.status-enviado {
+    background-color: #17a2b8; /* Azul Info */
+    color: var(--text-light);
+}
+
+</style>
+{% endblock %}
+
